@@ -31,8 +31,7 @@ public class ShiVectorOptions {
     protected Options plumeOptions = null;
 
     /** One line synopsis of usage */
-    private static final String usageString = "Set options with properties file: "
-            + OPTIONS_FILE;
+    private static final String usageString = "Set options with properties file: " + OPTIONS_FILE;
 
     private ShiVectorOptions() {
         plumeOptions = new Options(usageString, this);
@@ -46,8 +45,7 @@ public class ShiVectorOptions {
         } catch (FileNotFoundException e) {
             System.out.println("No options file, using default options");
         } catch (IOException e) {
-            System.out
-                    .println("Error reading options file, using default options");
+            System.out.println("Error reading options file, using default options");
         }
     }
 

@@ -48,8 +48,7 @@ public class VectorClock {
 
     private String json() {
         StringBuilder sb = new StringBuilder("{");
-        for (Map.Entry<String, AtomicInteger> entry : this.masterClock.get(
-                hostId()).entrySet()) {
+        for (Map.Entry<String, AtomicInteger> entry : this.masterClock.get(hostId()).entrySet()) {
             sb.append("\"" + entry.getKey() + "\":" + entry.getValue() + ", ");
         }
         int comma = sb.lastIndexOf(",");
@@ -74,12 +73,12 @@ public class VectorClock {
         // Increment this node's clock
         Map<String, AtomicInteger> clock = masterClock.get(hostId());
         clock.get(hostId()).incrementAndGet();
+        // [xxs] rt.jar: Atomically increments by one the current value.
     }
 
     /* Converts and returns the given int to a byte array */
     private byte[] intToByteArray(int value) {
-        return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
-                .putInt(value).array();
+        return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(value).array();
     }
 
     /* Converts and returns the first 4 bytes of a byte array to an int */
@@ -93,8 +92,7 @@ public class VectorClock {
         Map<String, AtomicInteger> clock = masterClock.get(hostId());
         for (String nodeId : otherClock.keySet()) {
             if (clock.containsKey(nodeId)) {
-                int val = Math.max(clock.get(nodeId).get(),
-                        otherClock.get(nodeId).get());
+                int val = Math.max(clock.get(nodeId).get(), otherClock.get(nodeId).get());
                 clock.get(nodeId).set(val);
             } else {
                 clock.put(nodeId, otherClock.get(nodeId));
@@ -149,8 +147,7 @@ public class VectorClock {
         byte[] msgArr = new byte[byteArrayToInt(msgLength)];
         source.get(msgArr);
 
-        ObjectInputStream objIn = new ObjectInputStream(
-                new ByteArrayInputStream(msgArr));
+        ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(msgArr));
         try {
             return objIn.readObject();
         } catch (ClassNotFoundException e) {
@@ -163,8 +160,7 @@ public class VectorClock {
     private void readClock(ByteArrayInputStream byteIn) throws IOException {
         ObjectInputStream objIn = new ObjectInputStream(byteIn);
         try {
-            Map<String, AtomicInteger> otherClock = (Map<String, AtomicInteger>) objIn
-                    .readObject();
+            Map<String, AtomicInteger> otherClock = (Map<String, AtomicInteger>) objIn.readObject();
             mergeClocks(otherClock);
         } catch (ClassNotFoundException e) {
             // Whelp we probably can't merge the clocks
@@ -229,8 +225,7 @@ public class VectorClock {
         byte[] msgArray = messageOut.toByteArray();
         byte[] msgLength = intToByteArray(msgArray.length);
 
-        byte[] out = new byte[mapLength.length + mapArray.length
-                + msgLength.length + msgArray.length];
+        byte[] out = new byte[mapLength.length + mapArray.length + msgLength.length + msgArray.length];
         ByteBuffer target = ByteBuffer.wrap(out);
         target.put(mapLength);
         target.put(mapArray);

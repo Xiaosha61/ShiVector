@@ -11,18 +11,15 @@ public class Client {
         client.run();
     }
 
-    public void run() throws UnknownHostException, IOException,
-            ClassNotFoundException {
+    public void run() throws UnknownHostException, IOException, ClassNotFoundException {
         Socket requestSocket = new Socket("localhost", Util.SERVER_PORT);
         System.out.println("Connected to server at port " + Util.SERVER_PORT);
 
         System.out.println("getting outputstream");
-        ObjectOutputStream out = new ObjectOutputStream(
-                requestSocket.getOutputStream());
+        ObjectOutputStream out = new ObjectOutputStream(requestSocket.getOutputStream());
         out.flush();
 
-        ObjectInputStream in = new ObjectInputStream(
-                requestSocket.getInputStream());
+        ObjectInputStream in = new ObjectInputStream(requestSocket.getInputStream());
 
         String message = (String) in.readObject();
         System.out.println("Message received:" + message);

@@ -14,22 +14,18 @@ public class Server {
     }
 
     void run() throws Exception {
-        ServerSocket providerSocket = new ServerSocket(Util.SERVER_PORT,
-                Util.BACKLOG);
+        ServerSocket providerSocket = new ServerSocket(Util.SERVER_PORT, Util.BACKLOG);
         System.out.println("Waiting for connection");
 
         Socket connection = providerSocket.accept();
-        System.out.println("Connection received from "
-                + connection.getInetAddress().getHostName());
+        System.out.println("Connection received from " + connection.getInetAddress().getHostName());
 
-        ObjectOutputStream out = new ObjectOutputStream(
-                connection.getOutputStream());
+        ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
         out.flush();
 
-        sendMessage(out, "Connection successful");
+        sendMessage(out, "Connection successful"); //[xxs] server --ConnectionSuccessful--> client
 
-        ObjectInputStream in = new ObjectInputStream(
-                connection.getInputStream());
+        ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
 
         String message = "";
         while (!(message = (String) in.readObject()).equals("bye")) {

@@ -27,13 +27,14 @@ public class BasicAspect {
     private VectorClock clock;
     private ShiVectorOptions options;
 
-    private static final String processId = ManagementFactory
-            .getRuntimeMXBean().getName();
+    private static final String processId = ManagementFactory.getRuntimeMXBean().getName();
     private static final String macAddress = getMacAddress();
 
     public BasicAspect() {
         this.options = ShiVectorOptions.getOptions();
         this.clock = new VectorClock(processId + macAddress, options);
+        //[xxs] processId: 36535@xxssMacBookAir
+        //[xxs] macAddress: 9C-F3-87-B7-B9-A0
     }
 
     private static String getMacAddress() {
@@ -43,8 +44,7 @@ public class BasicAspect {
             byte[] mac = network.getHardwareAddress();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < mac.length; i++) {
-                sb.append(String.format("%02X%s", mac[i],
-                        (i < mac.length - 1) ? "-" : ""));
+                sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
             }
             return sb.toString();
         } catch (Exception e) {
@@ -56,8 +56,8 @@ public class BasicAspect {
 
     // Adopted from http://www.javaspecialists.eu/archive/Issue169.html
     @Around("call(* java.net.Socket.getInputStream()) && target(s) && !within(shivector..*)")
-    public Object wrapInputStream(ProceedingJoinPoint joinPoint, Socket s)
-            throws Throwable {
+    public Object wrapInputStream(ProceedingJoinPoint joinPoint, Socket s) throws Throwable {
+        System.out.println("==> wrapInputStream");
         if (options.useSocketsAPI) {
             InputStream in = (InputStream) joinPoint.proceed();
             return new ShivSocketInputStream(in, clock);
@@ -66,8 +66,8 @@ public class BasicAspect {
     }
 
     @Around("call(* java.net.Socket.getOutputStream()) && target(s) && !within(shivector..*)")
-    public Object wrapOutputStream(ProceedingJoinPoint joinPoint, Socket s)
-            throws Throwable {
+    public Object wrapOutputStream(ProceedingJoinPoint joinPoint, Socket s) throws Throwable {
+        System.out.println("==> wrapOutputStream");
         if (options.useSocketsAPI) {
             OutputStream out = (OutputStream) joinPoint.proceed();
             return new ShivSocketOutputStream(out, clock);
@@ -76,8 +76,8 @@ public class BasicAspect {
     }
 
     @Around("call(* java.nio.channels.SocketChannel.write(..)) && args(buf) && target(s) && !within(shivector.aspects..*)")
-    public Object interceptNioWrite(ProceedingJoinPoint joinPoint,
-            ByteBuffer buf, SocketChannel s) throws Throwable {
+    public Object interceptNioWrite(ProceedingJoinPoint joinPoint, ByteBuffer buf, SocketChannel s) throws Throwable {
+        System.out.println("==> interceptNioWrite");
         if (options.useNioAPI) {
             clock.writeClock(s);
         }
@@ -85,8 +85,8 @@ public class BasicAspect {
     }
 
     @Around("call(* java.nio.channels.SocketChannel.read(..)) && args(buf) && target(s) && !within(shivector.aspects..*)")
-    public Object interceptNioRead(ProceedingJoinPoint joinPoint,
-            ByteBuffer buf, SocketChannel s) throws Throwable {
+    public Object interceptNioRead(ProceedingJoinPoint joinPoint, ByteBuffer buf, SocketChannel s) throws Throwable {
+        System.out.println("==> interceptNioRead");
         if (options.useNioAPI) {
             // NOTE(jennya): for now, we're going to assume that reads mirror
             // writes
@@ -96,13 +96,14 @@ public class BasicAspect {
             // similar to how the ShivInputStream does by tracking available
             // bytes.
             clock.parseClock(s);
+            //[xxs] call chain : -> readClock() -> VectorClock.mergeClock();
         }
         return joinPoint.proceed();
     }
 
     @Around("call(* org.apache.mina.core.session.IoSession.write(Object)) && args(msg) && !within(shivector.aspects..*)")
-    public Object interceptMinaWrite(ProceedingJoinPoint joinPoint, Object msg)
-            throws Throwable {
+    public Object interceptMinaWrite(ProceedingJoinPoint joinPoint, Object msg) throws Throwable {
+        System.out.println("==> interceptMinaWrite");
         if (options.useMinaAPI) {
             byte[] message = clock.getMessageArray(msg);
             return joinPoint.proceed(new Object[] { message });
@@ -110,9 +111,10 @@ public class BasicAspect {
         return joinPoint.proceed();
     }
 
-    @Around("call(* org.apache.mina.core.session.IoSession.write(Object, java.net.SocketAddress)) && args(msg, dest) && !within(shivector.aspects..*)")
-    public Object interceptMinaWriteDest(ProceedingJoinPoint joinPoint,
-            Object msg, SocketAddress dest) throws Throwable {
+    @Around("call(* org.apache.mina.core.session.IoSession.write(Object, java.net.Socket)) && args(msg, dest) && !within(shivector.aspects..*)")
+    public Object interceptMinaWriteDest(ProceedingJoinPoint joinPoint, Object msg, SocketAddress dest)
+            throws Throwable {
+        System.out.println("==> interceptMinaWriteDest");
         if (options.useMinaAPI) {
             byte[] message = clock.getMessageArray(msg);
             return joinPoint.proceed(new Object[] { message, dest });
@@ -121,10 +123,11 @@ public class BasicAspect {
     }
 
     @Around("execution(void org.apache.mina.core.service.IoHandlerAdapter.messageReceived(.., Object)) && args(session, message) && !within(shivector.aspects..*)")
-    public Object interceptMinaRead(ProceedingJoinPoint joinPoint,
-            Object session, Object message) throws Throwable {
+    public Object interceptMinaRead(ProceedingJoinPoint joinPoint, Object session, Object message) throws Throwable {
+        System.out.println("==> interceptMinaRead");
         if (options.useMinaAPI) {
             Object msg = clock.parseMessageArray((byte[]) message);
+            //[xxs] call chain : -> readClock() -> VectorClock.mergeClock();
             return joinPoint.proceed(new Object[] { session, msg });
         }
         return joinPoint.proceed();
@@ -132,31 +135,30 @@ public class BasicAspect {
 
     /******************************* Logging Aspects *******************************/
 
-    private Object print(ProceedingJoinPoint joinPoint, Object obj, boolean flag)
-            throws Throwable {
+    private Object print(ProceedingJoinPoint joinPoint, Object obj, boolean flag) throws Throwable {
         if (flag) {
             clock.incrementClock();
-            return joinPoint.proceed(new Object[] { obj.toString() + "\n"
-                    + clock });
+            return joinPoint.proceed(new Object[] { obj.toString() + "\n" + clock });
         }
         return joinPoint.proceed();
     }
 
     @Around("call(void *.println(String)) && args(str) && !within(shivector..*)")
-    public Object interceptPrintlnLogging(ProceedingJoinPoint joinPoint,
-            String str) throws Throwable {
+    //[xxs] as long as *.println(String) is called and it's not happend in shivector, the following func is executed.
+    public Object interceptPrintlnLogging(ProceedingJoinPoint joinPoint, String str) throws Throwable {
+        System.out.println("==> interceptPrintlnLogging");
         return print(joinPoint, str, options.usePrintln);
     }
 
     @Around("call(void org.apache.log4j.Logger.info(*))&& args(obj) && !within(shivector..*)")
-    public Object interceptLog4JInfo(ProceedingJoinPoint joinPoint, Object obj)
-            throws Throwable {
+    public Object interceptLog4JInfo(ProceedingJoinPoint joinPoint, Object obj) throws Throwable {
+        System.out.println("==> interceptLog4JInfo");
         return print(joinPoint, obj, options.useLog4J);
     }
 
     @Around("call(void org.apache.log4j.Logger.warn(*))&& args(obj) && !within(shivector..*)")
-    public Object interceptLog4JWarn(ProceedingJoinPoint joinPoint, Object obj)
-            throws Throwable {
+    public Object interceptLog4JWarn(ProceedingJoinPoint joinPoint, Object obj) throws Throwable {
+        System.out.println("==> interceptLog4JWarn");
         return print(joinPoint, obj, options.useLog4J);
     }
 }
