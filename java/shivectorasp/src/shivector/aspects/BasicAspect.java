@@ -110,7 +110,7 @@ public class BasicAspect {
         return joinPoint.proceed();
     }
 
-    @Around("call(* org.apache.mina.core.session.IoSession.write(Object, SocketAddress)) && args(msg, dest) && !within(shivector.aspects..*)")
+    @Around("call(* org.apache.mina.core.session.IoSession.write(Object, java.net.SocketAddress)) && args(msg, dest) && !within(shivector.aspects..*)")
     public Object interceptMinaWriteDest(ProceedingJoinPoint joinPoint,
             Object msg, SocketAddress dest) throws Throwable {
         if (options.useMinaAPI) {
