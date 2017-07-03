@@ -1,0 +1,28 @@
+#####################
+# java
+#####################
+
+# Ignore directories with auto-generated files
+java/shivectorasp/bin/**/**/*.class
+java/shivectorasp/junit/*
+
+# Ignore the compiled jar
+java/lib/shivector.jar
+
+# Ignore compiled files in apps
+java/apps/**/bin/*
+
+# Ignore output recording files
+java/apps/**/output/*
+
+#####################
+# python
+#####################
+
+python/*.pyc
+python/test/*.pyc
+python/vlib/*.pyc
+python/threadpool/*.pyc
+python/vlib/*.log
+.DS_Store
+
