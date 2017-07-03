@@ -45,8 +45,8 @@
   <!--=====================================================================-->
 
   <!-- Required ShiVector and AspectJ properties -->
-  <property name="shivector.lib" value="/Users/jennyabrahamson/Documents/research/synoptic/lib" />
-  <property name="aspectj" value="/Users/jennyabrahamson/Applications/aspectj1.7/lib" />
+  <property name="shivector.lib" value="/Users/sasa/Thesis/ShiVector/java/lib" />
+  <property name="aspectj" value="/Users/sasa/extraJavaLibrary/aspectj1.8/lib" />
 
   <!-- The jars ShiVector depends on, in classpath form. -->
   <path id="sampleserver.depjars.classpath" >
