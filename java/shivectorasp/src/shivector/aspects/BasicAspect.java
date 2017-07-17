@@ -75,6 +75,7 @@ public class BasicAspect {
         return joinPoint.proceed();
     }
 
+    /*
     @Around("call(* java.nio.channels.SocketChannel.write(..)) && args(buf) && target(s) && !within(shivector.aspects..*)")
     public Object interceptNioWrite(ProceedingJoinPoint joinPoint, ByteBuffer buf, SocketChannel s) throws Throwable {
         System.out.println("==> interceptNioWrite");
@@ -83,7 +84,7 @@ public class BasicAspect {
         }
         return joinPoint.proceed();
     }
-
+    
     @Around("call(* java.nio.channels.SocketChannel.read(..)) && args(buf) && target(s) && !within(shivector.aspects..*)")
     public Object interceptNioRead(ProceedingJoinPoint joinPoint, ByteBuffer buf, SocketChannel s) throws Throwable {
         System.out.println("==> interceptNioRead");
@@ -100,7 +101,7 @@ public class BasicAspect {
         }
         return joinPoint.proceed();
     }
-
+    
     @Around("call(* org.apache.mina.core.session.IoSession.write(Object)) && args(msg) && !within(shivector.aspects..*)")
     public Object interceptMinaWrite(ProceedingJoinPoint joinPoint, Object msg) throws Throwable {
         System.out.println("==> interceptMinaWrite");
@@ -110,7 +111,7 @@ public class BasicAspect {
         }
         return joinPoint.proceed();
     }
-
+    
     @Around("call(* org.apache.mina.core.session.IoSession.write(Object, java.net.Socket)) && args(msg, dest) && !within(shivector.aspects..*)")
     public Object interceptMinaWriteDest(ProceedingJoinPoint joinPoint, Object msg, SocketAddress dest)
             throws Throwable {
@@ -121,7 +122,7 @@ public class BasicAspect {
         }
         return joinPoint.proceed();
     }
-
+    
     @Around("execution(void org.apache.mina.core.service.IoHandlerAdapter.messageReceived(.., Object)) && args(session, message) && !within(shivector.aspects..*)")
     public Object interceptMinaRead(ProceedingJoinPoint joinPoint, Object session, Object message) throws Throwable {
         System.out.println("==> interceptMinaRead");
@@ -132,7 +133,7 @@ public class BasicAspect {
         }
         return joinPoint.proceed();
     }
-
+    */
     /******************************* Logging Aspects *******************************/
 
     private Object print(ProceedingJoinPoint joinPoint, Object obj, boolean flag) throws Throwable {
@@ -144,21 +145,23 @@ public class BasicAspect {
     }
 
     @Around("call(void *.println(String)) && args(str) && !within(shivector..*)")
-    //[xxs] as long as *.println(String) is called and it's not happend in shivector, the following func is executed.
+    //[xxs] as long as System.out.println(String) is called and it's not happend in shivector, the following func is executed.
+    //[xxs] this is actually the only [advice] of which app/server-client makes use to prefix vector clock.
     public Object interceptPrintlnLogging(ProceedingJoinPoint joinPoint, String str) throws Throwable {
         System.out.println("==> interceptPrintlnLogging");
         return print(joinPoint, str, options.usePrintln);
     }
-
+    /*
     @Around("call(void org.apache.log4j.Logger.info(*))&& args(obj) && !within(shivector..*)")
     public Object interceptLog4JInfo(ProceedingJoinPoint joinPoint, Object obj) throws Throwable {
         System.out.println("==> interceptLog4JInfo");
         return print(joinPoint, obj, options.useLog4J);
     }
-
+    
     @Around("call(void org.apache.log4j.Logger.warn(*))&& args(obj) && !within(shivector..*)")
     public Object interceptLog4JWarn(ProceedingJoinPoint joinPoint, Object obj) throws Throwable {
         System.out.println("==> interceptLog4JWarn");
         return print(joinPoint, obj, options.useLog4J);
     }
+    */
 }
